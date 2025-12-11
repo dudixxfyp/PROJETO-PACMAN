@@ -839,3 +839,317 @@ Retorna códigos diferentes para cada tipo de colisão //
             };
             Vector2 origin = {tamTile /…
 // Explicação: Renderiza todos os fantasmas com sprite apropriado baseado em seu estado atual.
+
+```
+### 4. menu2.C/menu2.h
+
+```C
+#include "menu.h"
+#include "pacman.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+
+void initPilha(Pilha *p) { p->topo = NULL; }
+
+void pushPilha(Pilha *p, char acao) {
+    Node *n = malloc(sizeof(Node));
+    if (!n) return;
+    n->acao = acao;
+    n->prox = p->topo;
+    p->topo = n;
+}
+
+char popPilha(Pilha *p) {
+    if (p->topo == NULL) return '\0';
+    Node *n = p->topo;
+    char a = n->acao;
+    p->topo = n->prox;
+    free(n);
+    return a;
+}
+
+int pilhaVazia(Pilha *p) {
+    return p->topo == NULL;
+}
+
+// ------------------ SALVAR JOGO ------------------
+void salvarJogo(GameData *d) {
+    FILE *f = fopen("save.dat","wb");
+    if(!f) return;
+
+    // Salva pontuação
+    fwrite(&d->score, sizeof(int), 1, f);
+
+    // Salva posição do pacman
+    fwrite(&d->pacman.linha, sizeof(int), 1, f);
+    fwrite(&d->pacman.coluna, sizeof(int), 1, f);
+
+    // Salva mapa
+    for (int i = 0; i < d->mapa->linhas; i++){  // CORRIGIDO: adicionado 'i' na condição
+        fwrite(d->mapa->celulas[i], sizeof(char), d->mapa->colunas, f);
+    }
+
+    fclose(f);
+}
+
+// ------------------ CARREGAR JOGO ------------------
+int carregarJogo(GameData *d) {
+    FILE *f = fopen("save.dat","rb");
+    if (!f) return 0;
+
+    fread(&d->score, sizeof(int), 1, f);
+    fread(&d->pacman.linha, sizeof(int), 1, f);
+    fread(&d->pacman.coluna, sizeof(int), 1, f);
+
+    d->pacman.posicao.x = d->pacman.coluna * TILE + TILE / 2;
+    d->pacman.posicao.y = d->pacman.linha * TILE + TILE / 2;
+
+    for(int i = 0; i < d->mapa->linhas; i++){
+        fread(d->mapa->celulas[i], sizeof(char), d->mapa->colunas, f);  // CORRIGIDO: removida vírgula antes do ponto
+    }
+
+    fclose(f);
+    return 1;
+}
+
+// ------------------ MENU PRINCIPAL ------------------
+void mostrarMenu(GameData *data, int *jogoPausado, int *resetar) {
+    static Pilha historico;
+    static int inicializado = 0;
+
+    if (!inicializado) {
+        initPilha(&historico);
+        inicializado = 1;
+    }
+
+    printf("\n=========== MENU DO JOGO ===========\n");
+    printf("N - Novo Jogo\n");
+    printf("S - Salvar Jogo\n");
+    printf("C - Carregar Jogo\n");
+    printf("V - Voltar ao Jogo\n");
+    printf("Q - Sair\n");
+
+    if (!pilhaVazia(&historico))
+        printf("\nÚltima ação: %c\n", historico.topo->acao);
+
+    printf("\nEscolha: ");
+    int op = getchar();
+    while (getchar() != '\n'); // limpa buffer
+
+    switch(op) {
+        case 'n': case 'N':
+            pushPilha(&historico, 'N');
+            *resetar = 1;
+            break;
+        case 's': case 'S':
+            pushPilha(&historico, 'S');
+            salvarJogo(data);  // CORRIGIDO: salvarJogo não retorna int
+            printf("Jogo salvo!\n");
+            break;
+        case 'c': case 'C':
+            pushPilha(&historico, 'C');
+            if (carregarJogo(data)) {
+                printf("Jogo carregado!\n");
+            } else {
+                printf("Sem save!\n");
+            }
+            break;
+        case 'v': case 'V':
+            pushPilha(&historico, 'V');
+            *jogoPausado = 0;
+            break;
+        case 'q': case 'Q':
+            pushPilha(&historico, 'Q');
+            printf("Saindo...\n");
+            exit(0);
+        default:
+            printf("Opcao invalida!\n");
+            break;
+    }
+}
+//EXPLICAÇÃO:Esse código cuida do menu do jogo e também de salvar e carregar o progresso. Ele usa uma pilha para guardar o histórico das ações que o jogador escolhe no menu. As funções de salvar gravam em um arquivo a pontuação, a posição do Pac-Man e o mapa do jogo, enquanto a função de carregar pega esses dados do arquivo e coloca tudo de volta no jogo. O menu mostra opções como começar um novo jogo, salvar, carregar, voltar ou sair, e cada vez que o jogador escolhe algo, essa ação é guardada na pilha. Assim, o jogo consegue manter o progresso e o jogador pode continuar de onde parou.
+
+```
+```c
+#ifndef MENU_H
+#define MENU_H
+
+#include "pacman.h"
+#include "Fantasma.h"
+#include "mapa.h"
+
+// Estrutura com tudo que o menu precisa acessar
+typedef struct {
+    Pacman pacman;
+    Fantasma fantasma;
+    int numFantasmas;
+    int score;
+    int nivel;
+    float tempo;
+    int pelletsRestantes;
+    Mapa *mapa;
+} GameData;
+
+// ------------------ PILHA ------------------
+typedef struct Node {
+    char acao;
+    struct Node *prox;
+} Node;
+
+typedef struct {
+    Node *topo;
+} Pilha;
+
+void initPilha(Pilha *p);
+void pushPilha(Pilha *p, char acao);
+char popPilha(Pilha *p);
+int pilhaVazia(Pilha *p);
+
+// ------------------ MENU E SALVAMENTO ------------------
+int salvarJogo(GameData *data);
+int carregarJogo(GameData *data);
+
+void mostrarMenu(GameData *data, int *jogoPausado, int *resetar);
+
+#endif // MENU_H
+
+//explicação:Esse código é um cabeçalho que organiza todas as estruturas e funções que o menu do jogo precisa. Ele define a estrutura **GameData**, que guarda tudo o que o jogo precisa acessar pelo menu, como o Pac-Man, os fantasmas, pontuação, nível, tempo, quantidade de pellets restantes e o mapa. Também define uma estrutura de **pilha**, usada para registrar o histórico das ações escolhidas pelo jogador no menu, especificando o tipo de nó e como a pilha funciona. Além disso, declara as funções que inicializam a pilha, adicionam e removem ações dela, e verificam se está vazia. Por fim, declara também as funções responsáveis por salvar e carregar o jogo, além da função que mostra o menu e controla as escolhas do jogador. Tudo isso serve para organizar o código e permitir que outras partes do jogo usem essas funcionalidades.
+
+```
+### 5. mapa.c/mapa.h
+```c
+#include "mapa.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "raylib.h"
+
+
+Mapa *carregarMapa(const char *arquivo){
+    if (!arquivo) return NULL; // 
+    FILE *f = fopen(arquivo, "r");
+    if (!f) { // Mensagem de erro caso o arquivo não possa ser aberto
+        fprintf(stderr,"Erro ao abrir o arquivo do mapa. %s\n", arquivo); 
+        return NULL;
+    }
+
+
+    Mapa *m = malloc (sizeof(Mapa)); // alocar estrutura do mapa dinamicamente
+    if (!m) { // erro na alocação
+        fclose(f);
+        return NULL;
+    }
+
+    m->linhas = 20;
+    m->colunas = 40;
+
+    m->celulas = malloc(sizeof(char*) * m->linhas); // alocar dinacamente matriz de celulas
+    if (!m -> celulas) {
+        free(m);
+        fclose(f);
+        return NULL;
+    }
+
+    for (int i = 0; i < m->linhas; i++) {
+        m->celulas[i] = malloc(sizeof(char) * (m->colunas + 1)); // copiar as linhas lidas para a matriz do mapa
+        if(!m->celulas[i]){
+
+            for(int k = 0; k < 1; k++){
+                free(m->celulas[k]);
+            }
+            free(m->celulas);
+            free(m);
+            fclose(f);
+            return NULL;
+        }
+
+        if (fgets(m->celulas[i], m->colunas + 2, f)) {
+            // Remover caracteres de nova linha
+            size_t len = strlen(m->celulas[i]);
+            while (len > 0 && (m->celulas[i][len-1] == '\n' || m->celulas[i][len-1] == '\r')) {
+                m->celulas[i][--len] = '\0';
+            }
+            // Preencher com espaços se necessário
+            while (len < m->colunas) {
+                m->celulas[i][len++] = ' ';
+            }
+            m->celulas[i][m->colunas] = '\0';
+        }
+    }
+    return m;
+}
+
+// liberarMapa: liberar a memoria alocada para o mapa
+void liberarMapa(Mapa *mapa){
+    if (!mapa) return; // retorna se o mapa for NULL
+    if (mapa->celulas) {
+        for (int i = 0; i < mapa->linhas; i++) {
+            free(mapa->celulas[i]);
+        }
+        free(mapa->celulas);
+    } free(mapa);
+}
+
+// inicializarJogo: monta o nome mapa<N>.txt e chama carregarMapa
+// explicação :Esse trecho de código é responsável por carregar o mapa do jogo a partir de um arquivo de texto e também liberar toda a memória usada quando o mapa não é mais necessário. A função que carrega o mapa abre o arquivo indicado, confere se ele existe e, caso tudo esteja certo, cria dinamicamente uma estrutura que guarda o número de linhas, colunas e uma matriz com os caracteres do mapa. Cada linha do arquivo é lida, ajustada para remover quebras de linha e completada com espaços se for menor do que o tamanho esperado. O código também verifica possíveis erros de alocação de memória e libera tudo corretamente para evitar vazamentos. Já a função de liberar o mapa percorre todas as linhas, libera cada uma e depois libera a estrutura principal. Assim, esse código garante que o jogo carregue o mapa corretamente e gerencie bem a memória.
+
+```
+```C
+
+#ifndef mapa_h
+#define mapa_h
+
+typedef struct {
+    int linhas;
+    int colunas;
+    char **celulas; // matriz que representa as celulas do mapa, celulas[linhas][colunas]
+} Mapa;
+
+typedef struct {
+    int linha; // representa o indice do y(linha) no mapa
+    int coluna; // representa o indice do x(coluna) no mapa
+} Posicao;
+
+// carregar o mapa a partir de um arquivo de texto. Com tamanhos de até 20x40 LxC
+// Retorna um ponteiro para o mapa carregado ou NULL em caso de erro.
+Mapa* carregarMapa(const char* arquivo);
+
+//liberar a memoria alocada para o mapa
+void liberarMapa(Mapa* mapa);
+
+// Desenhar o mapa na tela usando ncurses.
+// pacman e os fantasmas(blinky, pinky, inky, clyde) são posições no estilo(linha, coluna).
+// vidas, pontuacao e nivel são informações adicionais a serem exibidas na tela.
+
+
+
+#endif // mapa_h
+// explicação:Esse arquivo de cabeçalho define as estruturas e funções básicas usadas para trabalhar com o mapa do jogo. Ele cria a estrutura **Mapa**, que armazena o número de linhas, colunas e uma matriz de caracteres que representa o layout do cenário, e a estrutura **Posicao**, que guarda uma linha e uma coluna para indicar onde algo está no mapa. Também declara a função que carrega o mapa a partir de um arquivo de texto — retornando um ponteiro para o mapa ou **NULL** caso ocorra erro — e outra função responsável por liberar toda a memória usada pelo mapa. Essas declarações organizam o que outras partes do jogo precisam saber para manipular o mapa corretamente e exibi-lo na tela.
+
+```
+### 6. mapa.txt/mapa2.txt
+```C
+########################################
+#..................##..................#
+#.####.#####.##.#####.####.#####.##.##.#
+#O####.#####.##.#####.####.#####.##.##O#
+#......................................#
+#.####.##.########.##.########.##.####.#
+#......##....##....##....##....##......#
+######.#####.##.#####.#####.##.#####.###
+T     #.##   F      F    ##.#      T
+######.##.##############.##.############
+#..........##      P     ##............#
+######.##.##############.##.############
+      #.##   F      F    ##.#
+######.##.##############.##.############
+#............##....##..................#
+#.####.#####.##.##.#####.####.#####.##.#
+#...##................##...............#
+###.##.##.########.##.##.###.##.########
+#O....................................O#
+########################################
+ //mapa 1
+
+
