@@ -1,8 +1,7 @@
 # PROJETO-PACMAN
 # 🎮 PAC-MAN Game
 
-Um clone do clássico jogo Pac-Man desenvolvido em C utilizando a biblioteca Raylib.
-
+pacman desenvolvimento com raylib, com adaptações do original
 ## 📋 Descrição
 
 Este projeto implementa uma versão do icônico jogo Pac-Man, onde o jogador controla o personagem Chico-Man através de um labirinto, coletando pontos enquanto foge dos fantasmas. O jogo apresenta mecânicas clássicas como power-ups, sistema de vidas, salvamento de progresso e múltiplos níveis de dificuldade.
@@ -63,27 +62,6 @@ Existem duas formas de vencer:
 - Compilador C (GCC ou Clang)
 - Biblioteca Raylib instalada
 
-### Instalando Raylib
-
-**Linux (Ubuntu/Debian)**
-```bash
-sudo apt install libraylib-dev
-```
-
-**macOS (Homebrew)**
-```bash
-brew install raylib
-```
-
-**Windows**
-- Baixe o instalador em [raylib.com](https://www.raylib.com/)
-
-### Compilação
-
-```bash
-# Clone o repositório
-git clone https://github.com/seu-usuario/pacman-game.git
-cd pacman-game
 
 # Compile o projeto
 gcc -o pacman main.c pacman.c Fantasma.c mapa.c menu2.c -lraylib -lm
@@ -208,25 +186,6 @@ typedef struct ListaFantasmas {
 2. **Vulnerável (VULNERAVEL)**: Fantasmas ficam azuis e podem ser comidos (8 segundos)
 3. **Morto (MORTO)**: Fantasma foi comido, mostra apenas os olhos
 
-## 🔧 Possíveis Melhorias Futuras
-
-- [ ] IA mais inteligente para os fantasmas
-- [ ] Mais níveis e mapas
-- [ ] Sistema de high scores online
-- [ ] Efeitos sonoros e música
-- [ ] Power-ups adicionais
-- [ ] Modo multiplayer
-- [ ] Diferentes skins para personagens
-
-## 🤝 Contribuindo
-
-Contribuições são bem-vindas! Sinta-se à vontade para:
-
-1. Fazer um Fork do projeto
-2. Criar uma branch para sua feature (`git checkout -b feature/NovaFeature`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
-4. Push para a branch (`git push origin feature/NovaFeature`)
-5. Abrir um Pull Request
 
 ## 📄 Licença
 
@@ -234,15 +193,8 @@ Este projeto é um trabalho acadêmico desenvolvido para fins educacionais.
 
 ## 👥 Autores
 
-Desenvolvido como projeto acadêmico de Estruturas de Dados.
 
-## 🙏 Agradecimentos
 
-- [Raylib](https://www.raylib.com/) pela excelente biblioteca gráfica
-- Namco pelo jogo original Pac-Man
-- Comunidade open-source pelas referências e inspiração
-
----
 
 ## 📚 Documentação Detalhada dos Códigos
 
