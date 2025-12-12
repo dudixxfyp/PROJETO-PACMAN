@@ -192,7 +192,11 @@ typedef struct ListaFantasmas {
 Este projeto é um trabalho acadêmico desenvolvido para fins educacionais.
 
 ## 👥 Autores
-
+Gabriel Ferreira Carneiro  DRE: 124169097
+ Bruno Rafael V. Ferreira DRE:123047014
+ Bernardo Correa de Souza DRE: 123051788
+Thiago Moreira Ferreira DRE:123051788
+Maria Eduarda da Costa Vieira DRE:123369327
 
 
 
